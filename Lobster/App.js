@@ -9,6 +9,7 @@ import NavContainer from './navigation/NavContainer';
 import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import getStore from './redux/store';
+import {Root} from 'native-base';
 
 function App() {
   // persisted state stuff
@@ -19,7 +20,9 @@ function App() {
       <PersistGate loading={null} persistor={persistor}>
         <StatusBar barStyle="dark-content" />
         <SafeAreaView style={styles.safeAreaView}>
-          <NavContainer />
+          <Root>
+            <NavContainer />
+          </Root>
         </SafeAreaView>
       </PersistGate>
     </Provider>
