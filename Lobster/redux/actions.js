@@ -4,7 +4,8 @@ import {
 	UPDATE_PASSWORD,
 	UPDATE_FIRST_NAME,
 	UPDATE_LAST_NAME,
-	UPDATE_HEIGHT
+	UPDATE_HEIGHT,
+	SIGN_IN_USER,
 } from "./action_types";
 
 export const updateKeyboard = (keyboardShowing) => ({
@@ -35,4 +36,11 @@ export const updateLastName = (lastName) => ({
 export const updateHeight = (height) => ({
 	type: UPDATE_HEIGHT,
 	height,
-})
+});
+
+export const signInUser = (userId, height, fullName) => ({
+	type: SIGN_IN_USER,
+	userId,
+	height,
+	fullName,
+});

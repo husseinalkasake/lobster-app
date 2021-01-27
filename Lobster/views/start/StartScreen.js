@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'blue',
+    color: '#2B088E',
   },
 });
 

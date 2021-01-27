@@ -11,17 +11,24 @@ import { updateEmail, updatePassword, updateFirstName, updateLastName } from '..
 class SignUp extends React.Component {
     state = {
         password: "",
-        confirmPassword: ""
+        confirmPassword: "",
+        error: "",
     }
 
     isValid() {
         const {password, confirmPassword} = this.state;
         const {email, firstName, lastName} = this.props;
-        return [email, firstName, lastName, password, confirmPassword].every(val => val !== "" && val !== null);
+        const isValid = [email, firstName, lastName, password, confirmPassword].every(val => val !== "" && val !== null);
+        this.setState({error: isValid ? "" : "No matching account found. Please try again."});
+        return isValid;
+    }
+
+    signUp() {
+      
     }
     
     render() {
-        const {password, confirmPassword} = this.state;
+        const {password, confirmPassword, error} = this.state;
         const {email, firstName, lastName, updateEmail, updateFirstName, updateLastName, navigation, keyboardShowing} = this.props;
         return (
             <View style={styles.view}>
@@ -62,7 +69,9 @@ class SignUp extends React.Component {
                 <Button style={{width: '100%', justifyContent: 'center', marginTop: '20%'}} disabled={!(!!password && !!confirmPassword && password === confirmPassword)} onPress={() => this.isValid() && this.props.updatePassword(password) && navigation.navigate(START_GENERAL_INFORMATION_ROUTE)}>
                     <Label style={{color: 'white'}}>Register</Label>
                 </Button>
-                <Text style={{color: 'red', fontWeight: 'bold', fontSize: 12, alignSelf: 'center', marginTop: '5%'}}>{"No matching account found. Please try again."}</Text>
+                {error !== "" && (
+                  <Text style={{color: 'red', fontWeight: 'bold', fontSize: 12, alignSelf: 'center', marginTop: '5%'}}>{error}</Text>
+                )}
             </View>
             {!keyboardShowing && (
               <TouchableOpacity style={{width: '100%', position: 'absolute', bottom: '5%'}} onPress={() => navigation.navigate(START_SIGN_IN_ROUTE)}>
@@ -102,7 +111,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'blue',
+    color: '#2B088E',
   },
 });
 

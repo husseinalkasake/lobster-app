@@ -1,17 +1,17 @@
 import { Form, Item, Input, Label, Button } from 'native-base';
 import React from 'react';
-import {Text, View, StyleSheet, TouchableOpacity, KeyboardAvoidingView} from 'react-native';
+import {Text, View, StyleSheet} from 'react-native';
 import {
   START_SIGN_UP_ROUTE,
 } from '../../navigation/routes';
 import {connect} from 'react-redux';
 import { updateHeight } from '../../redux/actions';
-import LobsterController from '../../controller/LobsterController';
+import lobsterController from '../../controller/LobsterController';
 
 class GeneralInfo extends React.Component {
     register() {
         const {firstName, lastName, email, height} = this.props;
-        LobsterController.createUser(`${firstName} ${lastName}`, email, height)
+        lobsterController.createUser(`${firstName} ${lastName}`, email, height)
         .then(response => {
             if (response.data.status) {
              console.log(response);
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'blue',
+    color: '#2B088E',
   },
 });
 

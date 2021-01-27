@@ -2,11 +2,11 @@ import React from 'react';
 import {Text, View, StyleSheet} from 'react-native';
 import {connect} from 'react-redux';
 
-class Home extends React.Component {
+class Settings extends React.Component {
     render() {
         return (
           <View style={styles.view}>
-            <Text>Home</Text>
+            <Text>Settings</Text>
           </View>
         );
     }
@@ -55,4 +55,4 @@ const mapDispatchToProps = (dispatch) => ({
 	updateHeight: (height) => dispatch(updateHeight(height)),
 });
   
-  export default connect(mapStateToProps, mapDispatchToProps)(Home);
+  export default connect(mapStateToProps, mapDispatchToProps)(Settings);

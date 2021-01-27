@@ -1,58 +1,73 @@
 import { Form, Item, Input, Label, Button } from 'native-base';
 import React from 'react';
-import {Text, View, StyleSheet, TouchableOpacity, KeyboardAvoidingView} from 'react-native';
+import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
 import {
   START_SIGN_UP_ROUTE,
+  MAIN_HOME_ROUTE,
 } from '../../navigation/routes';
 import {connect} from 'react-redux';
-import { updateEmail, updatePassword } from '../../redux/actions';
-import LobsterController from '../../controller/LobsterController';
+import { updateEmail, updatePassword, signInUser } from '../../redux/actions';
+import lobsterController from '../../controller/LobsterController';
 
-function SignIn({email, password, updateEmail, updatePassword, navigation, keyboardShowing}) {
-  const signIn = () => {
-    LobsterController.getUser(email)
+class SignIn extends React.Component {
+  state = {
+    error: "",
+  }
+  
+  signIn() {
+    lobsterController.getUser(this.props.email)
     .then(response => {
-        if (response.data.status) {
-         console.log(response);
-       } 
+        const user = response.data.user;
+        if (user) {
+          this.props.signInUser(user.id, user.height, user.name);
+          this.setState({error: ""});
+          this.props.navigation.navigate(MAIN_HOME_ROUTE);
+       } else {
+         this.setState({error: "Unable to fetch user data. Please try again."});
+       }
     })
-    .catch(error => {
-        console.log(error);
+    .catch(() => {
+        debugger;
+        this.setState({error: "Unable to log in. Please try again."});
     });
-  };
-  return (
-    <View style={styles.view}>
-      <View style={styles.innerContainer}>
-        <Text style={styles.title}>Sign In</Text>
-        <View style={styles.form}>
-            <Form>
-                <Item style={styles.item} stackedLabel>
-                    <Label style={styles.itemLabel}>E-mail address</Label>
-                    <Input style={styles.input} value={email} onChangeText={text => updateEmail(text)}/>
-                </Item>
-            </Form>
-            <Form>
-                <Item style={styles.item} stackedLabel>
-                    <Label style={styles.itemLabel}>Password</Label>
-                    <Input style={styles.input} secureTextEntry={true} value={password} onChangeText={text => updatePassword(text)}/>
-                </Item>
-            </Form>
+  }
+
+  render() {
+    const {email, password, updateEmail, updatePassword, navigation, keyboardShowing} = this.props;
+    return (
+      <View style={styles.view}>
+        <View style={styles.innerContainer}>
+          <Text style={styles.title}>Sign In</Text>
+          <View style={styles.form}>
+              <Form>
+                  <Item style={styles.item} stackedLabel>
+                      <Label style={styles.itemLabel}>E-mail address</Label>
+                      <Input style={styles.input} value={email} onChangeText={text => updateEmail(text)}/>
+                  </Item>
+              </Form>
+              <Form>
+                  <Item style={styles.item} stackedLabel>
+                      <Label style={styles.itemLabel}>Password</Label>
+                      <Input style={styles.input} secureTextEntry={true} value={password} onChangeText={text => updatePassword(text)}/>
+                  </Item>
+              </Form>
+          </View>
+          <Button style={{width: '100%', justifyContent: 'center', marginTop: '20%'}} onPress={() => this.signIn()}>
+            <Label style={{textTransform: 'uppercase', color: 'white'}}>Sign in</Label>
+          </Button>
+          <Text style={{color: 'red', fontWeight: 'bold', fontSize: 12, alignSelf: 'center', marginTop: '5%'}}>{this.state.error}</Text>
+          <TouchableOpacity style={{width: '100%', marginTop: '10%'}}>
+            <Text style={{fontWeight: 'bold', alignSelf: 'center'}}>Forgot Password?</Text>
+          </TouchableOpacity>
         </View>
-        <Button style={{width: '100%', justifyContent: 'center', marginTop: '20%'}} onPress={() => signIn()}>
-          <Label style={{textTransform: 'uppercase', color: 'white'}}>Sign in</Label>
-        </Button>
-        <Text style={{color: 'red', fontWeight: 'bold', fontSize: 12, alignSelf: 'center', marginTop: '5%'}}>{"No matching account found. Please try again."}</Text>
-        <TouchableOpacity style={{width: '100%', marginTop: '10%'}}>
-          <Text style={{fontWeight: 'bold', alignSelf: 'center'}}>Forgot Password?</Text>
-        </TouchableOpacity>
+        {!keyboardShowing && (
+          <TouchableOpacity style={{width: '100%', position: 'absolute', bottom: '5%'}} onPress={() => navigation.navigate(START_SIGN_UP_ROUTE)}>
+            <Text style={{fontWeight: 'bold', alignSelf: 'center'}}>Don't have an account?</Text>
+          </TouchableOpacity>
+        )}
       </View>
-      {!keyboardShowing && (
-        <TouchableOpacity style={{width: '100%', position: 'absolute', bottom: '5%'}} onPress={() => navigation.navigate(START_SIGN_UP_ROUTE)}>
-          <Text style={{fontWeight: 'bold', alignSelf: 'center'}}>Don't have an account?</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+    );
+  }
 }
 
 const styles = StyleSheet.create({
@@ -83,7 +98,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'blue',
+    color: '#2B088E',
   },
 });
 
@@ -95,7 +110,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
 	updateEmail: (email) => dispatch(updateEmail(email)),
-	updatePassword: (password) => dispatch(updatePassword(password)),
+  updatePassword: (password) => dispatch(updatePassword(password)),
+  signInUser: (userId, height, fullName) => dispatch(signInUser(userId, height, fullName)), 
 });
   
-  export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
+export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
