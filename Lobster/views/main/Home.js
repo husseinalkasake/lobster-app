@@ -1,12 +1,14 @@
 import React from 'react';
-import {Text, View, StyleSheet} from 'react-native';
+import {Text, View, Button, StyleSheet} from 'react-native';
 import {connect} from 'react-redux';
+import {MAIN_WORK_SESSION_ROUTE} from '../../navigation/routes';
 
 class Home extends React.Component {
     render() {
         return (
           <View style={styles.view}>
             <Text>Home</Text>
+            <Button title='Start New Work Session' onPress={() => this.props.navigation.navigate(MAIN_WORK_SESSION_ROUTE)}></Button>
           </View>
         );
     }

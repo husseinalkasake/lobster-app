@@ -1,56 +1,24 @@
 import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-import Home from "../views/main/Home";
-import Statistics from "../views/main/Statistics";
-import Settings from "../views/main/Settings";
-import routes from "./routes";
+import { createStackNavigator } from "@react-navigation/stack";
+import {MAIN_TABS_ROUTE, MAIN_WORK_SESSION_ROUTE } from "./routes";
+import MainTabs from "./MainTabs";
+import WorkSession from './WorkSession';
 
 export default function MainNav() {
-	const Tab = createBottomTabNavigator();
+    const MainStack = createStackNavigator();
 
 	return (
-		<Tab.Navigator
-			initialRouteName={routes.MAIN_HOME_ROUTE}
-			screenOptions={({ route }) => ({
-				tabBarIcon: ({ focused, color, size }) => {
-					let iconName;
-
-					switch (route.name) {
-            case routes.MAIN_STATISTICS_ROUTE:
-              iconName = focused ? "equalizer" : "equalizer-outline";
-              break;
-            case routes.MAIN_SETTINGS_ROUTE:
-              iconName = focused ? "account-supervisor" : "account-supervisor-outline";
-              break;
-						default:
-              iconName = focused ? "home" : "home-outline";
-							break;
-					}
-
-					return (
-						<Icon name={iconName} size={size} color={color} />
-					);
-				},
-			})}
-			tabBarOptions={{
-				activeTintColor: "black",
-				inactiveTintColor: "gray",
-				showLabel: false,
-			}}>
-			<Tab.Screen
-				name={routes.MAIN_HOME_ROUTE}
-				component={Home}
-			/>
-			<Tab.Screen
-				name={routes.MAIN_STATISTICS_ROUTE}
-				component={Statistics}
-			/>
-			<Tab.Screen
-				name={routes.MAIN_SETTINGS_ROUTE}
-				component={Settings}
-			/>
-		</Tab.Navigator>
+		<MainStack.Navigator initialRouteName={MAIN_TABS_ROUTE}>
+			<MainStack.Screen
+          	name={MAIN_TABS_ROUTE}
+          	component={MainTabs}
+          	options={{headerShown: false}}
+        	/>
+			<MainStack.Screen
+          	name={MAIN_WORK_SESSION_ROUTE}
+          	component={WorkSession}
+          	options={{headerShown: false}}
+        	/>
+		</MainStack.Navigator>
 	);
 }
