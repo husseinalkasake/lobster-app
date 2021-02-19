@@ -27,7 +27,6 @@ class SignIn extends React.Component {
        }
     })
     .catch(() => {
-        debugger;
         this.setState({error: "Unable to log in. Please try again."});
     });
   }

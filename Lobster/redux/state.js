@@ -7,6 +7,7 @@ const defaultState = {
   lastName: '',
   height: '',
   userId: '',
+  sessionId: '',
   fullName: '',
 };
 

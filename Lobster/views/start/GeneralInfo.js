@@ -88,4 +88,4 @@ const mapDispatchToProps = (dispatch) => ({
 	updateHeight: (height) => dispatch(updateHeight(height)),
 });
   
-  export default connect(mapStateToProps, mapDispatchToProps)(GeneralInfo);
+export default connect(mapStateToProps, mapDispatchToProps)(GeneralInfo);

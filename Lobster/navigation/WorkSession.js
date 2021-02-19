@@ -1,18 +1,18 @@
 import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
-import NewWorkSession from '../views/work_session/NewWorkSession';
+import WorkSessionPage from '../views/work_session/WorkSession';
 import {
-    MAIN_NEW_WORK_SESSION
+  WORK_SESSION
 } from './routes';
 
 export default class WorkSession extends React.Component {
   render() {
     const WorkSessionStack = createStackNavigator();
     return (
-      <WorkSessionStack.Navigator initialRouteName={MAIN_NEW_WORK_SESSION}>
+      <WorkSessionStack.Navigator initialRouteName={WORK_SESSION}>
         <WorkSessionStack.Screen
-          name={MAIN_NEW_WORK_SESSION}
-          component={NewWorkSession}
+          name={WORK_SESSION}
+          component={WorkSessionPage}
           options={{headerShown: false}}
         />
       </WorkSessionStack.Navigator>

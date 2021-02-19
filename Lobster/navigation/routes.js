@@ -15,7 +15,8 @@ export const MAIN_STATISTICS_ROUTE = 'Statistics';
 export const MAIN_SETTINGS_ROUTE = 'Settings';
 
 // Work Session Section
-export const MAIN_NEW_WORK_SESSION = 'NewWorkSession';
+export const WORK_SESSION_SETUP = 'WorkSessionSetup';
+export const WORK_SESSION = 'WorkSession';
 
 const routes = {
   START_ROUTE,
@@ -26,7 +27,8 @@ const routes = {
   MAIN_HOME_ROUTE,
   MAIN_STATISTICS_ROUTE,
   MAIN_SETTINGS_ROUTE,
-  MAIN_NEW_WORK_SESSION,
+  WORK_SESSION_SETUP,
+  WORK_SESSION,
   MAIN_TABS_ROUTE,
   MAIN_WORK_SESSION_ROUTE,
 };
