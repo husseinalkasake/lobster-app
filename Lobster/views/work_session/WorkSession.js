@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Dimensions, BackHandler } from 'react-native';
 import { Button, Label } from 'native-base';
 import { RNCamera } from 'react-native-camera';
 import { connect } from 'react-redux';
@@ -11,33 +11,30 @@ class Timer extends React.Component {
       hours: 0,
       minutes: 59,
       seconds: 50,
-      startingWorkSession: false,
   }
-  
-  componentDidMount() {
-    this.setState({startingWorkSession: true});
-    lobsterController.startSession(this.props.userId).then(() => {
-        this.setState({startingWorkSession: false});
-        this.timerTick = setInterval(() => {
-            const { hours, seconds, minutes } = this.state;
-    
-            if (seconds < 59) {
-                this.setState({seconds: seconds + 1});
-            } else {
-                if (minutes < 59)                
-                  this.setState({minutes: minutes + 1, seconds: 0});
-                else
-                  this.setState({hours: hours + 1, minutes: 0, seconds: 0});
-            } 
-        }, 1000);
+
+  componentDidUpdate(prevProps) {
+    if (this.props.active && this.props.active !== prevProps.active) {
+      debugger;
+      this.timerTick = setInterval(() => {
+        const { hours, seconds, minutes } = this.state;
+
+        if (seconds < 59) {
+            this.setState({seconds: seconds + 1});
+        } else {
+            if (minutes < 59)                
+              this.setState({minutes: minutes + 1, seconds: 0});
+            else
+              this.setState({hours: hours + 1, minutes: 0, seconds: 0});
+        }
+      }, 1000);
       this.halfMinuteMark = setInterval(() => this.props.onHalfMinuteMark && this.props.onHalfMinuteMark(), 30000);
-    })
-    .catch((error) => console.log(error));
-}
+    }
+  }
 
   componentWillUnmount() {
-      clearInterval(this.timerTick);
-      clearInterval(this.halfMinuteMark);
+    this.timerTick && clearInterval(this.timerTick);
+    this.halfMinuteMark && clearInterval(this.halfMinuteMark);
   }
 
   render() {
@@ -53,6 +50,27 @@ class Timer extends React.Component {
 class WorkSession extends React.Component {
     state = {
       imgCount: 0,
+      startingWorkSession: false,
+      confirmEndSession: false,
+      confirmMoveDesk: false,
+    }
+
+    componentDidMount() {
+      debugger;
+      this.setState({startingWorkSession: true});
+      lobsterController.startSession(this.props.userId).then(() => {
+          debugger;
+          this.setState({startingWorkSession: false});
+          this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+            this.setState({confirmEndSession: true});
+            return true;
+          });
+      })
+      .catch((error) => console.log(error));
+    }
+
+    componentWillUnmount() {
+      this.backHandler.remove();
     }
 
     takePicture = async () => {
@@ -61,19 +79,17 @@ class WorkSession extends React.Component {
           const data = await this.camera.takePictureAsync(options);
           lobsterController.sendImage(this.props.userId, this.props.sessionId, data.base64)
           .then(response => {
-            debugger;
             const temp = response;
             debugger;
           })
           .catch(error => {
-              debugger;
               console.log(error);
           }).finally(() => this.setState({imgCount: this.state.imgCount + 1}));
         }
     }
 
     render() {
-        const { imgCount } = this.state;
+        const { imgCount, startingWorkSession } = this.state;
         const windowWidth = Dimensions.get('window').width;
         const windowHeight = Dimensions.get('window').height;
 
@@ -84,7 +100,7 @@ class WorkSession extends React.Component {
                   <View>
                     <Text style={{marginLeft: 8, fontSize: 16, fontWeight: 'bold', color: '#A30020'}}>In Progress</Text>
                     <View style={{position: 'absolute', right: 4}}>
-                      <Timer style={{textAlign: 'right'}} onHalfMinuteMark={this.takePicture} />
+                      <Timer style={{textAlign: 'right'}} active={!startingWorkSession} onHalfMinuteMark={this.takePicture} />
                       <Text style={{textAlign: 'right', color: 'gray', fontSize: 12, fontWeight: 'bold'}}>{imgCount > 0 ? `${imgCount} Image${imgCount > 1 ? 's' : ''} Captured` : 'No Images Yet'}</Text>
                     </View>
                   </View>
@@ -115,20 +131,64 @@ class WorkSession extends React.Component {
                     />
                 </View>
                 <View style={{position: 'absolute', bottom: 0, width: '100%'}}>
-                  <TouchableOpacity style={styles.button}>
+                  <TouchableOpacity style={styles.button} onPress={() => this.setState({confirmEndSession: true})}>
                     <Text style={styles.buttonText}>End Work Session</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={{position: 'absolute', width: '100%', bottom: 20}}>
+                  <TouchableOpacity style={{position: 'absolute', width: '100%', bottom: 20}} onPress={() => this.setState({confirmMoveDesk: true})}>
                     <Text style={{fontWeight: 'bold', alignSelf: 'center'}}>Move Desk?</Text>
                   </TouchableOpacity>
                 </View>
                 {this.state.startingWorkSession && (
-                  <View style={{position: 'absolute', top: 0, marginLeft: -24, marginTop: -24, height: windowHeight, width: windowWidth, elevation: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-                    <View style={{position: 'relative',flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                      <View style={{backgroundColor: 'white', height: '25%', width: '80%', padding: 12}}>
-                        <Text style={{color: 'black'}}>Setting up Work Session...</Text>
+                  <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
+                      <View style={styles.settingUpPopUpContainer}>
+                        <Text style={{color: 'black', fontWeight: 'bold'}}>Setting up Work Session...</Text>
                       </View>
-                    </View>
+                  </View>
+                )}
+                {this.state.confirmEndSession && (
+                  <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
+                      <View style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        backgroundColor: 'white',
+                        height: '15%',
+                        width: '100%',
+                        paddingHorizontal: 24,
+                        paddingTop: 24,
+                      }}>
+                        <Text style={{color: 'black', fontWeight: 'bold'}}>Are you sure you want to end work session?</Text>
+                        <View style={{position: 'relative', flex: 1, flexDirection: 'column', marginTop: 24}}>
+                          <TouchableOpacity onPress={() => this.setState({confirmEndSession: false})} style={{position: 'absolute', left: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{fontWeight: 'bold'}}>No</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => this.props.navigation.goBack()} style={{position: 'absolute', right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{fontWeight: 'bold'}}>Yes</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                  </View>
+                )}
+                {this.state.confirmMoveDesk && (
+                  <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
+                      <View style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        backgroundColor: 'white',
+                        height: '15%',
+                        width: '100%',
+                        paddingHorizontal: 24,
+                        paddingTop: 24,
+                      }}>
+                        <Text style={{color: 'black', fontWeight: 'bold'}}>Are you sure you want to move desk?</Text>
+                        <View style={{position: 'relative', flex: 1, flexDirection: 'column', marginTop: 24}}>
+                          <TouchableOpacity onPress={() => this.setState({confirmMoveDesk: false})} style={{position: 'absolute', left: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{fontWeight: 'bold'}}>No</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={{position: 'absolute', right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{fontWeight: 'bold'}}>Yes</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
                   </View>
                 )}
           </View>
@@ -168,6 +228,25 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     textAlignVertical: 'center',
     height: 60,
+  },
+  popUpBackground: {
+    position: 'absolute',
+    top: 0,
+    marginLeft: -24,
+    marginTop: -24,
+    elevation: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  settingUpPopUpContainer: {
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: 'white',
+    height: '15%',
+    width: '100%',
+    padding: 12,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
