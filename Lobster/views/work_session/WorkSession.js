@@ -9,8 +9,8 @@ import lobsterController from '../../controller/LobsterController';
 class Timer extends React.Component {
   state = {
       hours: 0,
-      minutes: 59,
-      seconds: 50,
+      minutes: 0,
+      seconds: 0,
   }
 
   componentDidUpdate(prevProps) {
@@ -28,13 +28,16 @@ class Timer extends React.Component {
               this.setState({hours: hours + 1, minutes: 0, seconds: 0});
         }
       }, 1000);
-      this.halfMinuteMark = setInterval(() => this.props.onHalfMinuteMark && this.props.onHalfMinuteMark(), 30000);
+
+      if (this.props.onHalfMinuteMark) this.halfMinuteMark = setInterval(() => this.props.onHalfMinuteMark(), 30000);
+      if (this.props.onFiveMinuteMark) this.fiveMinuteMark = setInterval(() => this.props.onFiveMinuteMark(), 60000);
     }
   }
 
   componentWillUnmount() {
     this.timerTick && clearInterval(this.timerTick);
     this.halfMinuteMark && clearInterval(this.halfMinuteMark);
+    this.fiveMinuteMark && clearInterval(this.fiveMinuteMark);
   }
 
   render() {
@@ -58,9 +61,10 @@ class WorkSession extends React.Component {
     componentDidMount() {
       debugger;
       this.setState({startingWorkSession: true});
-      lobsterController.startSession(this.props.userId).then(() => {
+      lobsterController.startSession(this.props.userId).then(result => {
           debugger;
           this.setState({startingWorkSession: false});
+          this.props.updateSessionId(result.data.session.id);
           this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
             this.setState({confirmEndSession: true});
             return true;
@@ -77,6 +81,7 @@ class WorkSession extends React.Component {
         if (this.camera) {
           const options = { quality: 0.5, base64: true };
           const data = await this.camera.takePictureAsync(options);
+          debugger;
           lobsterController.sendImage(this.props.userId, this.props.sessionId, data.base64)
           .then(response => {
             const temp = response;
@@ -86,6 +91,19 @@ class WorkSession extends React.Component {
               console.log(error);
           }).finally(() => this.setState({imgCount: this.state.imgCount + 1}));
         }
+    }
+
+    getSummary = () => {
+      debugger;
+      lobsterController.getSessionSummary(this.props.userId, this.props.sessionId)
+      .then(response => {
+        const temp = response;
+        debugger;
+      })
+      .catch(error => {
+          console.log(error);
+          debugger;
+      });
     }
 
     render() {
@@ -100,7 +118,7 @@ class WorkSession extends React.Component {
                   <View>
                     <Text style={{marginLeft: 8, fontSize: 16, fontWeight: 'bold', color: '#A30020'}}>In Progress</Text>
                     <View style={{position: 'absolute', right: 4}}>
-                      <Timer style={{textAlign: 'right'}} active={!startingWorkSession} onHalfMinuteMark={this.takePicture} />
+                      <Timer style={{textAlign: 'right'}} active={!startingWorkSession} onHalfMinuteMark={this.takePicture} onFiveMinuteMark={this.getSummary} />
                       <Text style={{textAlign: 'right', color: 'gray', fontSize: 12, fontWeight: 'bold'}}>{imgCount > 0 ? `${imgCount} Image${imgCount > 1 ? 's' : ''} Captured` : 'No Images Yet'}</Text>
                     </View>
                   </View>
@@ -186,6 +204,27 @@ class WorkSession extends React.Component {
                           </TouchableOpacity>
                           <TouchableOpacity style={{position: 'absolute', right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>Yes</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                  </View>
+                )}
+                {1 && (
+                  <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
+                      <View style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        backgroundColor: 'white',
+                        height: '20%',
+                        width: '100%',
+                        paddingHorizontal: 24,
+                        paddingTop: 24,
+                      }}>
+                        <Text style={{color: 'black', fontWeight: 'bold'}}>Performance So Far</Text>
+                        <Text style={{color: 'black', fontWeight: 'bold'}}>Temp</Text>
+                        <View style={{position: 'relative', flex: 1, flexDirection: 'column', marginTop: 24}}>
+                          <TouchableOpacity style={{position: 'absolute', left: 0, right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '100%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{fontWeight: 'bold'}}>OK</Text>
                           </TouchableOpacity>
                         </View>
                       </View>

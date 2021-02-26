@@ -1,13 +1,16 @@
 import React from 'react';
-import {Text, View, Button, StyleSheet} from 'react-native';
+import {Text, View, Button, StyleSheet, Image, Dimensions} from 'react-native';
 import {connect} from 'react-redux';
 import {MAIN_WORK_SESSION_ROUTE} from '../../navigation/routes';
+import HomeImage from "../../images/home.svg";
 
 class Home extends React.Component {
     render() {
+        const windowWidth = Dimensions.get('window').width;
+        const windowHeight = Dimensions.get('window').height;
         return (
           <View style={styles.view}>
-            <Text>Home</Text>
+            <HomeImage width={windowWidth/2} height={windowHeight/2}/>
             <Button title='Start New Work Session' onPress={() => this.props.navigation.navigate(MAIN_WORK_SESSION_ROUTE)}></Button>
           </View>
         );
