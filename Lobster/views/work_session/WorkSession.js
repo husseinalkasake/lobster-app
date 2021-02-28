@@ -5,6 +5,8 @@ import { RNCamera } from 'react-native-camera';
 import { connect } from 'react-redux';
 import {updateSessionId} from '../../redux/actions';
 import lobsterController from '../../controller/LobsterController';
+import BluetoothManager from '../../bluetooth/BluetoothManager';
+import { Buffer } from 'buffer';
 
 class Timer extends React.Component {
   state = {
@@ -15,7 +17,6 @@ class Timer extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (this.props.active && this.props.active !== prevProps.active) {
-      debugger;
       this.timerTick = setInterval(() => {
         const { hours, seconds, minutes } = this.state;
 
@@ -30,7 +31,7 @@ class Timer extends React.Component {
       }, 1000);
 
       if (this.props.onHalfMinuteMark) this.halfMinuteMark = setInterval(() => this.props.onHalfMinuteMark(), 30000);
-      if (this.props.onFiveMinuteMark) this.fiveMinuteMark = setInterval(() => this.props.onFiveMinuteMark(), 60000);
+      if (this.props.onFiveMinuteMark) this.fiveMinuteMark = setInterval(() => this.props.onFiveMinuteMark(), 5*60000);
     }
   }
 
@@ -56,13 +57,12 @@ class WorkSession extends React.Component {
       startingWorkSession: false,
       confirmEndSession: false,
       confirmMoveDesk: false,
+      showCurrentProgressSummary: false,
     }
 
     componentDidMount() {
-      debugger;
       this.setState({startingWorkSession: true});
       lobsterController.startSession(this.props.userId).then(result => {
-          debugger;
           this.setState({startingWorkSession: false});
           this.props.updateSessionId(result.data.session.id);
           this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -71,43 +71,49 @@ class WorkSession extends React.Component {
           });
       })
       .catch((error) => console.log(error));
+      
+      BluetoothManager.initializeManager();
+      BluetoothManager.scanForDevice();
     }
 
     componentWillUnmount() {
-      this.backHandler.remove();
+      this.backHandler && this.backHandler.remove();
     }
 
     takePicture = async () => {
         if (this.camera) {
-          const options = { quality: 0.5, base64: true };
-          const data = await this.camera.takePictureAsync(options);
-          debugger;
+          const data = await this.camera.takePictureAsync({ quality: 0.5, base64: true });
           lobsterController.sendImage(this.props.userId, this.props.sessionId, data.base64)
-          .then(response => {
-            const temp = response;
-            debugger;
+          .then(() => {
+            this.setState({imgCount: this.state.imgCount + 1});
           })
           .catch(error => {
               console.log(error);
-          }).finally(() => this.setState({imgCount: this.state.imgCount + 1}));
+          });
         }
     }
 
     getSummary = () => {
-      debugger;
-      lobsterController.getSessionSummary(this.props.userId, this.props.sessionId)
+      lobsterController.getLastFiveMinSummary(this.props.userId, this.props.sessionId)
       .then(response => {
-        const temp = response;
-        debugger;
+        this.setState({showCurrentProgressSummary: true});
       })
       .catch(error => {
           console.log(error);
-          debugger;
       });
     }
 
+    moveDesk = () => {
+      BluetoothManager.readValue().then(result => {
+        const temp = new Buffer(result.value, 'base64').toString('ascii');
+        const temp2 =  Buffer.from(result.value, 'base64').readUInt16LE(0);
+        debugger;
+        BluetoothManager.writeMessage("0");
+      });
+    };
+
     render() {
-        const { imgCount, startingWorkSession } = this.state;
+        const { imgCount, startingWorkSession, showCurrentProgressSummary } = this.state;
         const windowWidth = Dimensions.get('window').width;
         const windowHeight = Dimensions.get('window').height;
 
@@ -202,14 +208,14 @@ class WorkSession extends React.Component {
                           <TouchableOpacity onPress={() => this.setState({confirmMoveDesk: false})} style={{position: 'absolute', left: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>No</Text>
                           </TouchableOpacity>
-                          <TouchableOpacity style={{position: 'absolute', right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                          <TouchableOpacity onPress={() => this.moveDesk()} style={{position: 'absolute', right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>Yes</Text>
                           </TouchableOpacity>
                         </View>
                       </View>
                   </View>
                 )}
-                {1 && (
+                {showCurrentProgressSummary && (
                   <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
                       <View style={{
                         position: 'absolute',
@@ -223,7 +229,7 @@ class WorkSession extends React.Component {
                         <Text style={{color: 'black', fontWeight: 'bold'}}>Performance So Far</Text>
                         <Text style={{color: 'black', fontWeight: 'bold'}}>Temp</Text>
                         <View style={{position: 'relative', flex: 1, flexDirection: 'column', marginTop: 24}}>
-                          <TouchableOpacity style={{position: 'absolute', left: 0, right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '100%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                          <TouchableOpacity onPress={() => this.setState({showCurrentProgressSummary: false})} style={{position: 'absolute', left: 0, right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '100%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>OK</Text>
                           </TouchableOpacity>
                         </View>

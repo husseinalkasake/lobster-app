@@ -1,17 +1,36 @@
 import React from 'react';
-import {Text, View, Button, StyleSheet, Image, Dimensions} from 'react-native';
+import {Text, View, Button, StyleSheet, Image, Dimensions, TouchableOpacity} from 'react-native';
 import {connect} from 'react-redux';
 import {MAIN_WORK_SESSION_ROUTE} from '../../navigation/routes';
 import HomeImage from "../../images/home.svg";
 
 class Home extends React.Component {
     render() {
+        const { fullName } = this.props;
         const windowWidth = Dimensions.get('window').width;
         const windowHeight = Dimensions.get('window').height;
+        const hourOfDay = new Date().getHours();
+        let time = "";
+        if (hourOfDay >= 18 || hourOfDay < 4)
+          time = "Evening";
+        else if (hourOfDay >= 12)
+          time = "Afternoon";
+        else
+          time = "Morning";
+        
         return (
           <View style={styles.view}>
-            <HomeImage width={windowWidth/2} height={windowHeight/2}/>
-            <Button title='Start New Work Session' onPress={() => this.props.navigation.navigate(MAIN_WORK_SESSION_ROUTE)}></Button>
+            <View style={styles.innerContainer}>
+              <Text style={styles.title}>Good {time} {fullName.substr(0, fullName.indexOf(" "))}</Text>
+              <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                <HomeImage width={windowWidth/2} height={windowHeight/2}/>
+              </View>
+              <TouchableOpacity
+              style={styles.button}
+              onPress={() => this.props.navigation.navigate(MAIN_WORK_SESSION_ROUTE)}>
+                <Text style={styles.buttonText}>Start New Work Session</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         );
     }
@@ -26,7 +45,7 @@ const styles = StyleSheet.create({
   innerContainer: {
     width: '80%',
     position: 'absolute',
-    top: '25%',
+    top: '20%',
   },
   form: {
     width: '100%',
@@ -47,17 +66,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2B088E',
   },
+  button: {
+    width: '100%',
+    borderColor: 'black',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginVertical: 10,
+  },
+  buttonText: {
+    textTransform: 'uppercase',
+    fontSize: 14,
+    alignSelf: 'center',
+    textAlignVertical: 'center',
+    paddingVertical: 10,
+    height: 85,
+  },
 });
 
 const mapStateToProps = (state) => ({
-    firstName: state.firstName,
-    lastName: state.lastName,
-    email: state.email,
-    height: state.height,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-	updateHeight: (height) => dispatch(updateHeight(height)),
+    fullName: state.fullName,
 });
   
-  export default connect(mapStateToProps, mapDispatchToProps)(Home);
+  export default connect(mapStateToProps, null)(Home);
