@@ -3,12 +3,10 @@ import {createStackNavigator} from '@react-navigation/stack';
 import StartScreen from '../views/start/StartScreen';
 import SignIn from '../views/start/SignIn';
 import SignUp from '../views/start/SignUp';
-import GeneralInfo from '../views/start/GeneralInfo';
 import {
   START_INTRO_ROUTE,
   START_SIGN_IN_ROUTE,
   START_SIGN_UP_ROUTE,
-  START_GENERAL_INFORMATION_ROUTE
 } from './routes';
 
 export default class Start extends React.Component {
@@ -29,11 +27,6 @@ export default class Start extends React.Component {
         <StartStack.Screen
           name={START_SIGN_UP_ROUTE}
           component={SignUp}
-          options={{headerShown: false}}
-        />
-        <StartStack.Screen
-          name={START_GENERAL_INFORMATION_ROUTE}
-          component={GeneralInfo}
           options={{headerShown: false}}
         />
       </StartStack.Navigator>

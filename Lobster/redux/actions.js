@@ -1,12 +1,11 @@
 import {
 	UPDATE_KEYBOARD,
 	UPDATE_EMAIL,
-	UPDATE_PASSWORD,
-	UPDATE_FIRST_NAME,
-	UPDATE_LAST_NAME,
+	UPDATE_NAME,
 	UPDATE_HEIGHT,
 	SIGN_IN_USER,
 	UPDATE_SESSION_ID,
+	LOG_OUT,
 } from "./action_types";
 
 export const updateKeyboard = (keyboardShowing) => ({
@@ -19,19 +18,9 @@ export const updateEmail = (email) => ({
 	email,
 });
 
-export const updatePassword = (password) => ({
-	type: UPDATE_PASSWORD,
-	password,
-});
-
-export const updateFirstName = (firstName) => ({
-	type: UPDATE_FIRST_NAME,
-	firstName,
-});
-
-export const updateLastName = (lastName) => ({
-	type: UPDATE_LAST_NAME,
-	lastName,
+export const updateName = (name) => ({
+	type: UPDATE_NAME,
+	name,
 });
 
 export const updateHeight = (height) => ({
@@ -49,4 +38,8 @@ export const signInUser = (userId, height, fullName) => ({
 export const updateSessionId = (sessionId) => ({
 	type: UPDATE_SESSION_ID,
 	sessionId,
+});
+
+export const logOut = () => ({
+	type: LOG_OUT,
 })

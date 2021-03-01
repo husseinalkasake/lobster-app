@@ -3,10 +3,11 @@ import React from 'react';
 import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
 import {
   START_SIGN_IN_ROUTE,
-  START_GENERAL_INFORMATION_ROUTE
+  MAIN_HOME_ROUTE,
 } from '../../navigation/routes';
 import {connect} from 'react-redux';
-import { updateEmail, updatePassword, updateFirstName, updateLastName } from '../../redux/actions';
+import lobsterController from '../../controller/LobsterController';
+import { updateEmail, updateName, updateHeight, signInUser } from '../../redux/actions';
 
 class SignUp extends React.Component {
     state = {
@@ -17,19 +18,39 @@ class SignUp extends React.Component {
 
     isValid() {
         const {password, confirmPassword} = this.state;
-        const {email, firstName, lastName} = this.props;
-        const isValid = [email, firstName, lastName, password, confirmPassword].every(val => val !== "" && val !== null);
-        this.setState({error: isValid ? "" : "No matching account found. Please try again."});
+        const {email, name, height} = this.props;
+        const isValid = [email, name, height, password, confirmPassword].every(val => val !== "" && val !== null);
+        this.setState({error: isValid ? "" : "Invalid Fields. Please try again."});
         return isValid;
     }
 
-    signUp() {
-      
+    register() {
+      if (!this.isValid()) return;
+
+      const {password} = this.state;
+      const {name, email, height} = this.props;
+      lobsterController.createUser(name, email, height)
+      .then(response => {
+          debugger;
+          if (response.data) {
+           const user = response.data.user;
+           if (user) {
+             this.props.signInUser(user.id, user.height, user.name);
+             this.setState({error: ""});
+             this.props.navigation.navigate(MAIN_HOME_ROUTE);
+          } else {
+            this.setState({error: "Unable to fetch user data. Please try again."});
+          }
+         } 
+      })
+      .catch(error => {
+        this.setState({error: `Unable to sign up. ${error.response.data.message}`});
+      });
     }
     
     render() {
         const {password, confirmPassword, error} = this.state;
-        const {email, firstName, lastName, updateEmail, updateFirstName, updateLastName, navigation, keyboardShowing} = this.props;
+        const {email, name, updateEmail, updateHeight, updateName, height, navigation, keyboardShowing} = this.props;
         return (
             <View style={styles.view}>
             <View style={styles.innerContainer}>
@@ -43,14 +64,14 @@ class SignUp extends React.Component {
                     </Form>
                     <Form>
                         <Item style={styles.item} stackedLabel>
-                            <Label style={styles.itemLabel}>First Name</Label>
-                            <Input style={styles.input} value={firstName} onChangeText={text => updateFirstName(text)}/>
+                            <Label style={styles.itemLabel}>Name</Label>
+                            <Input style={styles.input} value={name} onChangeText={text => updateName(text)}/>
                         </Item>
                     </Form>
                     <Form>
                         <Item style={styles.item} stackedLabel>
-                            <Label style={styles.itemLabel}>Last Name</Label>
-                            <Input style={styles.input} value={lastName} onChangeText={text => updateLastName(text)}/>
+                            <Label style={styles.itemLabel}>Height (cm)</Label>
+                            <Input keyboardType="number-pad" style={styles.input} value={height.toString()} onChangeText={text => updateHeight(Number(text.replace(/\D/g, "").toString()))}/>
                         </Item>
                     </Form>
                     <Form>
@@ -66,7 +87,7 @@ class SignUp extends React.Component {
                         </Item>
                     </Form>
                 </View>
-                <Button style={{width: '100%', justifyContent: 'center', marginTop: '20%'}} disabled={!(!!password && !!confirmPassword && password === confirmPassword)} onPress={() => this.isValid() && this.props.updatePassword(password) && navigation.navigate(START_GENERAL_INFORMATION_ROUTE)}>
+                <Button style={{width: '100%', justifyContent: 'center', marginTop: '20%'}} disabled={!(!!password && !!confirmPassword && password === confirmPassword)} onPress={() => this.register()}>
                     <Label style={{color: 'white'}}>Register</Label>
                 </Button>
                 {error !== "" && (
@@ -117,16 +138,16 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => ({
   email: state.email,
-  firstName: state.firstName,
-  lastName: state.lastName,
+  name: state.name,
+  height: state.height,
   keyboardShowing: state.keyboardShowing
 });
 
 const mapDispatchToProps = (dispatch) => ({
 	updateEmail: (email) => dispatch(updateEmail(email)),
-	updatePassword: (password) => dispatch(updatePassword(password)),
-	updateFirstName: (firstName) => dispatch(updateFirstName(firstName)),
-	updateLastName: (lastName) => dispatch(updateLastName(lastName)),
+	updateName: (name) => dispatch(updateName(name)),
+	updateHeight: (height) => dispatch(updateHeight(height)),
+  signInUser: (userId, height, fullName) => dispatch(signInUser(userId, height, fullName)), 
 });
   
-  export default connect(mapStateToProps, mapDispatchToProps)(SignUp);
+export default connect(mapStateToProps, mapDispatchToProps)(SignUp);

@@ -6,11 +6,12 @@ import {
   MAIN_HOME_ROUTE,
 } from '../../navigation/routes';
 import {connect} from 'react-redux';
-import { updateEmail, updatePassword, signInUser } from '../../redux/actions';
+import { updateEmail, signInUser } from '../../redux/actions';
 import lobsterController from '../../controller/LobsterController';
 
 class SignIn extends React.Component {
   state = {
+    password: "",
     error: "",
   }
   
@@ -32,7 +33,7 @@ class SignIn extends React.Component {
   }
 
   render() {
-    const {email, password, updateEmail, updatePassword, navigation, keyboardShowing} = this.props;
+    const {email, password, updateEmail, navigation, keyboardShowing} = this.props;
     return (
       <View style={styles.view}>
         <View style={styles.innerContainer}>
@@ -47,7 +48,7 @@ class SignIn extends React.Component {
               <Form>
                   <Item style={styles.item} stackedLabel>
                       <Label style={styles.itemLabel}>Password</Label>
-                      <Input style={styles.input} secureTextEntry={true} value={password} onChangeText={text => updatePassword(text)}/>
+                      <Input style={styles.input} secureTextEntry={true} value={password} onChangeText={password => this.setState({password})}/>
                   </Item>
               </Form>
           </View>
@@ -103,13 +104,11 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => ({
   email: state.email,
-  password: state.password,
   keyboardShowing: state.keyboardShowing
 });
 
 const mapDispatchToProps = (dispatch) => ({
 	updateEmail: (email) => dispatch(updateEmail(email)),
-  updatePassword: (password) => dispatch(updatePassword(password)),
   signInUser: (userId, height, fullName) => dispatch(signInUser(userId, height, fullName)), 
 });
   

@@ -45,8 +45,7 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = (state) => ({
-    firstName: state.firstName,
-    lastName: state.lastName,
+    name: state.name,
     email: state.email,
     height: state.height,
 });
