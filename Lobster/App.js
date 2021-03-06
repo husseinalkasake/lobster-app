@@ -10,10 +10,14 @@ import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import getStore from './redux/store';
 import {Root} from 'native-base';
+import BluetoothManager from './bluetooth/BluetoothManager';
 
 function App() {
   // persisted state stuff
   const {store, persistor} = getStore();
+
+  // initialize bluetooth manager
+  BluetoothManager.initializeManager();
 
   return (
     <Provider store={store}>

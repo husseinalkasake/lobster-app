@@ -6,6 +6,7 @@ const defaultState = {
   height: '',
   userId: '',
   sessionId: '',
+  deskConnected: false,
 };
 
 export default defaultState;

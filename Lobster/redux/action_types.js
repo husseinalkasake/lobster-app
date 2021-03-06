@@ -4,4 +4,5 @@ export const UPDATE_NAME = "UPDATE_NAME";
 export const UPDATE_HEIGHT = "UPDATE_HEIGHT";
 export const SIGN_IN_USER = "SIGN_IN_USER";
 export const UPDATE_SESSION_ID = "UPDATE_SESSION_ID";
+export const UPDATE_DESK_CONNECTION = "UPDATE_DESK_CONNECTION";
 export const LOG_OUT = "LOG_OUT";

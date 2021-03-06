@@ -3,11 +3,11 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Home from '../views/main/Home';
 import Statistics from '../views/main/Statistics';
-import Settings from '../views/main/Settings';
+import PersonalProfile from '../views/main/PersonalProfile';
 import {
 	MAIN_HOME_ROUTE,
 	MAIN_STATISTICS_ROUTE,
-	MAIN_SETTINGS_ROUTE,
+	MAIN_PERSONAL_PROFILE_ROUTE,
 } from './routes';
 
 export default function MainTabs() {
@@ -23,7 +23,7 @@ export default function MainTabs() {
             			case MAIN_STATISTICS_ROUTE:
               				iconName = focused ? "equalizer" : "equalizer-outline";
               				break;
-            			case MAIN_SETTINGS_ROUTE:
+            			case MAIN_PERSONAL_PROFILE_ROUTE:
               				iconName = focused ? "account-supervisor" : "account-supervisor-outline";
               				break;
 						default:
@@ -49,8 +49,8 @@ export default function MainTabs() {
 				component={Statistics}
 			/>
 			<Tab.Screen
-				name={MAIN_SETTINGS_ROUTE}
-				component={Settings}
+				name={MAIN_PERSONAL_PROFILE_ROUTE}
+				component={PersonalProfile}
 			/>
 		</Tab.Navigator>
 	);

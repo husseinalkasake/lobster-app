@@ -3,7 +3,6 @@ import React from 'react';
 import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
 import {
   START_SIGN_UP_ROUTE,
-  MAIN_HOME_ROUTE,
 } from '../../navigation/routes';
 import {connect} from 'react-redux';
 import { updateEmail, signInUser } from '../../redux/actions';
@@ -22,7 +21,6 @@ class SignIn extends React.Component {
         if (user) {
           this.props.signInUser(user.id, user.height, user.name);
           this.setState({error: ""});
-          this.props.navigation.navigate(MAIN_HOME_ROUTE);
        } else {
          this.setState({error: "Unable to fetch user data. Please try again."});
        }
@@ -33,7 +31,8 @@ class SignIn extends React.Component {
   }
 
   render() {
-    const {email, password, updateEmail, navigation, keyboardShowing} = this.props;
+    const {password} = this.state;
+    const {email, updateEmail, navigation, keyboardShowing} = this.props;
     return (
       <View style={styles.view}>
         <View style={styles.innerContainer}>
@@ -52,7 +51,7 @@ class SignIn extends React.Component {
                   </Item>
               </Form>
           </View>
-          <Button style={{width: '100%', justifyContent: 'center', marginTop: '20%'}} onPress={() => this.signIn()}>
+          <Button disabled={!(!!email && !!password)} style={{width: '100%', justifyContent: 'center', marginTop: '20%'}} onPress={() => this.signIn()}>
             <Label style={{textTransform: 'uppercase', color: 'white'}}>Sign in</Label>
           </Button>
           <Text style={{color: 'red', fontWeight: 'bold', fontSize: 12, alignSelf: 'center', marginTop: '5%'}}>{this.state.error}</Text>
@@ -109,7 +108,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
 	updateEmail: (email) => dispatch(updateEmail(email)),
-  signInUser: (userId, height, fullName) => dispatch(signInUser(userId, height, fullName)), 
+  signInUser: (userId, height, name) => dispatch(signInUser(userId, height, name)), 
 });
   
 export default connect(mapStateToProps, mapDispatchToProps)(SignIn);

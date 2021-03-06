@@ -1,0 +1,174 @@
+{
+    "results": {
+      "average": {
+        "back_hunch_angle": {
+          "max_angle_deg": 95,
+          "min_angle_deg": 85,
+          "score_weighting": 0.35,
+          "user_angle": 16.304976276044062,
+          "user_score": 0
+        },
+        "chair_height_change_cm": -47.93759089518475,
+        "desk_height_change_cm": 46.28446467199077,
+        "elbow_angle": {
+          "max_angle_deg": 5,
+          "min_angle_deg": -5,
+          "score_weighting": 0.15,
+          "user_angle": -24.721082198785815,
+          "user_score": 50.55783560242837
+        },
+        "head_tilt_angle": {
+          "max_angle_deg": 5,
+          "min_angle_deg": -5,
+          "score_weighting": 0.15,
+          "user_angle": 58.61085132382634,
+          "user_score": 0
+        },
+        "hip_to_knee_angle": {
+          "max_angle_deg": 95,
+          "min_angle_deg": 85,
+          "score_weighting": 0.1,
+          "user_angle": -71.21642619444387,
+          "user_score": 0
+        },
+        "ideal_desk_height_sitting_cm": 56.28788436105031,
+        "ideal_desk_height_standing_cm": 106.25156239043261,
+        "knee_to_foot_angle": {
+          "max_angle_deg": 95,
+          "min_angle_deg": 85,
+          "score_weighting": 0.05,
+          "user_angle": -49.345844193824355,
+          "user_score": 0
+        },
+        "neck_tilt_angle": {
+          "max_angle_deg": 95,
+          "min_angle_deg": 85,
+          "score_weighting": 0.05,
+          "user_angle": 34.60589436586029,
+          "user_score": 0
+        },
+        "recommendations": [
+          {
+            "adjustment_amount_cm": null,
+            "property": "monitor",
+            "user_message": "Your monitor appears a bit too low. Consider raising"
+          },
+          {
+            "adjustment_amount_cm": null,
+            "property": "face",
+            "user_message": "Your face appears a bit too close to your monitor. Consider bringing your monitor closer or increasing the font size on the screen."
+          },
+          {
+            "adjustment_amount_cm": null,
+            "property": "elbow",
+            "user_message": "Your elbows appears a bit too far out. Consider moving closer to your keyboard and mouse"
+          },
+          {
+            "adjustment_amount_cm": null,
+            "property": "back",
+            "user_message": "Your back appears to be hunching. Your current hunch angle is 16.304976276044062. Try to straighten your back closer to 90 degrees"
+          },
+          {
+            "adjustment_amount_cm": null,
+            "property": "feet",
+            "user_message": "Your feet appear a bit too tucked in. Try to keep your feet flat on the floor."
+          }
+        ],
+        "score": 7.583675340364255,
+        "shoulder_angle": {
+          "max_angle_deg": 90,
+          "min_angle_deg": 60,
+          "score_weighting": 0.15,
+          "user_angle": 36.36354253744344,
+          "user_score": 0
+        },
+        "work_position": "standing"
+      },
+      "standing": {
+        "1615001100.0": {
+          "back_hunch_angle": {
+            "max_angle_deg": 95,
+            "min_angle_deg": 85,
+            "score_weighting": 0.35,
+            "user_angle": 12.73359612483319,
+            "user_score": 0
+          },
+          "chair_height_change_cm": -36.7120583468064,
+          "desk_height_change_cm": 9.45495284525399,
+          "elbow_angle": {
+            "max_angle_deg": 5,
+            "min_angle_deg": -5,
+            "score_weighting": 0.15,
+            "user_angle": -36.8667169757241,
+            "user_score": 26.266566048551795
+          },
+          "head_tilt_angle": {
+            "max_angle_deg": 5,
+            "min_angle_deg": -5,
+            "score_weighting": 0.15,
+            "user_angle": 60.11117756998212,
+            "user_score": 0
+          },
+          "hip_to_knee_angle": {
+            "max_angle_deg": 95,
+            "min_angle_deg": 85,
+            "score_weighting": 0.1,
+            "user_angle": -78.228309746638,
+            "user_score": 0
+          },
+          "ideal_desk_height_sitting_cm": 74.21283533346441,
+          "ideal_desk_height_standing_cm": 111.71359808139964,
+          "knee_to_foot_angle": {
+            "max_angle_deg": 95,
+            "min_angle_deg": 85,
+            "score_weighting": 0.05,
+            "user_angle": -47.308858295502176,
+            "user_score": 0
+          },
+          "neck_tilt_angle": {
+            "max_angle_deg": 95,
+            "min_angle_deg": 85,
+            "score_weighting": 0.05,
+            "user_angle": 34.3475105741794,
+            "user_score": 0
+          },
+          "recommendations": [
+            {
+              "adjustment_amount_cm": null,
+              "property": "monitor",
+              "user_message": "Your monitor appears a bit too low. Consider raising"
+            },
+            {
+              "adjustment_amount_cm": null,
+              "property": "face",
+              "user_message": "Your face appears a bit too close to your monitor. Consider bringing your monitor closer or increasing the font size on the screen."
+            },
+            {
+              "adjustment_amount_cm": null,
+              "property": "elbow",
+              "user_message": "Your elbows appears a bit too far out. Consider moving closer to your keyboard and mouse"
+            },
+            {
+              "adjustment_amount_cm": null,
+              "property": "back",
+              "user_message": "Your back appears to be hunching. Your current hunch angle is 12.73359612483319. Try to straighten your back closer to 90 degrees"
+            },
+            {
+              "adjustment_amount_cm": null,
+              "property": "feet",
+              "user_message": "Your feet appear a bit too tucked in. Try to keep your feet flat on the floor."
+            }
+          ],
+          "score": 3.939984907282769,
+          "shoulder_angle": {
+            "max_angle_deg": 90,
+            "min_angle_deg": 60,
+            "score_weighting": 0.15,
+            "user_angle": 23.523698116437107,
+            "user_score": 0
+          },
+          "work_position": "standing"
+        }
+      }
+    }
+  }

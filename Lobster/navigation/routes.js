@@ -11,10 +11,10 @@ export const MAIN_WORK_SESSION_ROUTE = 'MainWorkSession';
 // Main Tabs Section
 export const MAIN_HOME_ROUTE = 'Home';
 export const MAIN_STATISTICS_ROUTE = 'Statistics';
-export const MAIN_SETTINGS_ROUTE = 'Settings';
+export const MAIN_PERSONAL_PROFILE_ROUTE = 'PersonalProfile';
 
 // Work Session Section
-export const WORK_SESSION_SETUP = 'WorkSessionSetup';
+export const WORK_SESSION_DESK_CONNECT_ROUTE = 'WorkSessionDeskConnect';
 export const WORK_SESSION = 'WorkSession';
 
 const routes = {
@@ -24,8 +24,8 @@ const routes = {
   START_SIGN_UP_ROUTE,
   MAIN_HOME_ROUTE,
   MAIN_STATISTICS_ROUTE,
-  MAIN_SETTINGS_ROUTE,
-  WORK_SESSION_SETUP,
+  MAIN_PERSONAL_PROFILE_ROUTE,
+  WORK_SESSION_DESK_CONNECT_ROUTE,
   WORK_SESSION,
   MAIN_TABS_ROUTE,
   MAIN_WORK_SESSION_ROUTE,

@@ -5,8 +5,9 @@ import { RNCamera } from 'react-native-camera';
 import { connect } from 'react-redux';
 import {updateSessionId} from '../../redux/actions';
 import lobsterController from '../../controller/LobsterController';
-import BluetoothManager from '../../bluetooth/BluetoothManager';
+import BluetoothManager, {ActionStatus} from '../../bluetooth/BluetoothManager';
 import { Buffer } from 'buffer';
+import { MAIN_TABS_ROUTE } from '../../navigation/routes';
 
 class Timer extends React.Component {
   state = {
@@ -36,6 +37,7 @@ class Timer extends React.Component {
   }
 
   componentWillUnmount() {
+    debugger;
     this.timerTick && clearInterval(this.timerTick);
     this.halfMinuteMark && clearInterval(this.halfMinuteMark);
     this.fiveMinuteMark && clearInterval(this.fiveMinuteMark);
@@ -58,12 +60,14 @@ class WorkSession extends React.Component {
       confirmEndSession: false,
       confirmMoveDesk: false,
       showCurrentProgressSummary: false,
+      moveDeskStatus: ActionStatus.INACTIVE,
     }
 
     componentDidMount() {
       this.setState({startingWorkSession: true});
       lobsterController.startSession(this.props.userId).then(result => {
           this.setState({startingWorkSession: false});
+          debugger;
           this.props.updateSessionId(result.data.session.id);
           this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
             this.setState({confirmEndSession: true});
@@ -71,9 +75,6 @@ class WorkSession extends React.Component {
           });
       })
       .catch((error) => console.log(error));
-      
-      BluetoothManager.initializeManager();
-      BluetoothManager.scanForDevice();
     }
 
     componentWillUnmount() {
@@ -83,6 +84,7 @@ class WorkSession extends React.Component {
     takePicture = async () => {
         if (this.camera) {
           const data = await this.camera.takePictureAsync({ quality: 0.5, base64: true });
+          debugger;
           lobsterController.sendImage(this.props.userId, this.props.sessionId, data.base64)
           .then(() => {
             this.setState({imgCount: this.state.imgCount + 1});
@@ -104,12 +106,10 @@ class WorkSession extends React.Component {
     }
 
     moveDesk = () => {
-      BluetoothManager.readValue().then(result => {
-        const temp = new Buffer(result.value, 'base64').toString('ascii');
-        const temp2 =  Buffer.from(result.value, 'base64').readUInt16LE(0);
-        debugger;
-        BluetoothManager.writeMessage("0");
-      });
+      this.setState({moveDeskStatus: ActionStatus.IN_PROGRESS});
+      BluetoothManager.writeMessagePromise("1")
+      .then(() => this.setState({moveDeskStatus: ActionStatus.SUCCESS}))
+      .catch(() => this.setState({moveDeskStatus: ActionStatus.FAIL}));
     };
 
     render() {
@@ -149,9 +149,6 @@ class WorkSession extends React.Component {
                         buttonPositive: 'Ok',
                         buttonNegative: 'Cancel',
                     }}
-                    onGoogleVisionBarcodesDetected={({ barcodes }) => {
-                        console.log(barcodes);
-                    }}
                     />
                 </View>
                 <View style={{position: 'absolute', bottom: 0, width: '100%'}}>
@@ -185,7 +182,7 @@ class WorkSession extends React.Component {
                           <TouchableOpacity onPress={() => this.setState({confirmEndSession: false})} style={{position: 'absolute', left: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>No</Text>
                           </TouchableOpacity>
-                          <TouchableOpacity onPress={() => this.props.navigation.goBack()} style={{position: 'absolute', right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                          <TouchableOpacity onPress={() => this.props.navigation.navigate(MAIN_TABS_ROUTE)} style={{position: 'absolute', right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>Yes</Text>
                           </TouchableOpacity>
                         </View>
@@ -215,7 +212,7 @@ class WorkSession extends React.Component {
                       </View>
                   </View>
                 )}
-                {showCurrentProgressSummary && (
+                {/* {showCurrentProgressSummary && (
                   <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
                       <View style={{
                         position: 'absolute',
@@ -235,7 +232,7 @@ class WorkSession extends React.Component {
                         </View>
                       </View>
                   </View>
-                )}
+                )} */}
           </View>
         );
     }

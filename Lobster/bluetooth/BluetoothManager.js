@@ -7,6 +7,13 @@ const DEVICE_ID = "64:69:4E:3E:04:4D";
 const DEVICE_SERVICE_ID = "0000ffe0-0000-1000-8000-00805f9b34fb";
 const DEVICE_CHARACTERISTIC_ID = "0000ffe1-0000-1000-8000-00805f9b34fb";
 
+export const ActionStatus = {
+  FAIL: -1,
+  INACTIVE: 0,
+  IN_PROGRESS: 1,
+  SUCCESS: 2,
+};
+
 const requestLocationPermission = async () => {
     let isGranted = false;
     try {
@@ -29,70 +36,82 @@ const requestLocationPermission = async () => {
       console.warn(err);
     }
     return isGranted;
-  };
+};
 
 export default class BluetoothManager {
     static _bleManager = null;
 
     static initializeManager() {
-        if (this._bleManager !== null) this._bleManager.destroy();
+        if (this._bleManager !== null) {
+          this._bleManager.destroy();
+        }
         this._bleManager = new BleManager();
     }
 
-    static writeMessage(message) {
-        this._bleManager
+    static writeMessagePromise(message) {
+        return this._bleManager
           .writeCharacteristicWithResponseForDevice(
             DEVICE_ID,
             DEVICE_SERVICE_ID,
             DEVICE_CHARACTERISTIC_ID,
             Buffer.from(message).toString('base64'),
-          )
-          .then((result) => {
-            console.log(result);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
+          );
     }
 
-    static readValue() {
+    static readValuePromise() {
       return this._bleManager.readCharacteristicForDevice(
         DEVICE_ID,
         DEVICE_SERVICE_ID,
         DEVICE_CHARACTERISTIC_ID
-      )
-      .catch((error) => {
-        debugger;
-      });
+      );
     }
 
-    static async scanForDevice() {
-        const locationAccessGranted = await requestLocationPermission();
-        if (!locationAccessGranted) return;
-        const subscription = this._bleManager.onStateChange((state) => {
-        if (state === 'PoweredOn') {
-            this._bleManager.startDeviceScan(null, null, (error, device) => {
-                if (error) {
-                console.log(error);
-                return;
-                }
+    static stopScan() {
+      this._bleManager.stopDeviceScan();
+    }
 
-                if (device.id === DEVICE_ID) {
-                this._bleManager.stopDeviceScan();
-        
-                device
-                    .connect()
-                    .then((device) => {
-                        console.log('successfully connected to DSD TECH');
-                        return device.discoverAllServicesAndCharacteristics();
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    });
-                }
-            });
-            subscription.remove();
+    static scanForDevicePromise() {
+      return new Promise(async(resolve, reject) => {
+        const locationAccessGranted = await requestLocationPermission();
+        if (!locationAccessGranted) {
+          reject();
+          return;
         }
+
+        const subscription = this._bleManager.onStateChange((state) => {
+          if (state === 'PoweredOn') {
+              subscription.remove();
+              this._bleManager.startDeviceScan(null, null, (error, device) => {
+                  if (error) {
+                    reject();
+                    return;
+                  }
+
+                  if (device.id === DEVICE_ID) {
+                    this._bleManager.stopDeviceScan();
+            
+                    device
+                        .connect()
+                        .then((device) => device.discoverAllServicesAndCharacteristics())
+                        .then(() => {
+                          resolve();
+                          return;
+                        })
+                        .catch(() => {
+                          reject();
+                          return;
+                        });
+                  }
+              });
+
+              // timeout
+              setInterval(() => {
+                this._bleManager.stopDeviceScan();
+                reject();
+                return;
+              }, 30000);
+          }
         }, true);
+      });
     }
 }

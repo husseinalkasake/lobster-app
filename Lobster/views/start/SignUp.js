@@ -3,7 +3,6 @@ import React from 'react';
 import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
 import {
   START_SIGN_IN_ROUTE,
-  MAIN_HOME_ROUTE,
 } from '../../navigation/routes';
 import {connect} from 'react-redux';
 import lobsterController from '../../controller/LobsterController';
@@ -27,21 +26,18 @@ class SignUp extends React.Component {
     register() {
       if (!this.isValid()) return;
 
-      const {password} = this.state;
       const {name, email, height} = this.props;
       lobsterController.createUser(name, email, height)
       .then(response => {
-          debugger;
           if (response.data) {
            const user = response.data.user;
            if (user) {
              this.props.signInUser(user.id, user.height, user.name);
              this.setState({error: ""});
-             this.props.navigation.navigate(MAIN_HOME_ROUTE);
           } else {
             this.setState({error: "Unable to fetch user data. Please try again."});
           }
-         } 
+         }
       })
       .catch(error => {
         this.setState({error: `Unable to sign up. ${error.response.data.message}`});
@@ -65,7 +61,7 @@ class SignUp extends React.Component {
                     <Form>
                         <Item style={styles.item} stackedLabel>
                             <Label style={styles.itemLabel}>Name</Label>
-                            <Input style={styles.input} value={name} onChangeText={text => updateName(text)}/>
+                            <Input style={styles.input} value={name} onChangeText={text => updateName(text.trim())}/>
                         </Item>
                     </Form>
                     <Form>
@@ -147,7 +143,7 @@ const mapDispatchToProps = (dispatch) => ({
 	updateEmail: (email) => dispatch(updateEmail(email)),
 	updateName: (name) => dispatch(updateName(name)),
 	updateHeight: (height) => dispatch(updateHeight(height)),
-  signInUser: (userId, height, fullName) => dispatch(signInUser(userId, height, fullName)), 
+  signInUser: (userId, height, name) => dispatch(signInUser(userId, height, name)), 
 });
   
 export default connect(mapStateToProps, mapDispatchToProps)(SignUp);

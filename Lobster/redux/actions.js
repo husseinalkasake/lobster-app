@@ -5,6 +5,7 @@ import {
 	UPDATE_HEIGHT,
 	SIGN_IN_USER,
 	UPDATE_SESSION_ID,
+	UPDATE_DESK_CONNECTION,
 	LOG_OUT,
 } from "./action_types";
 
@@ -28,11 +29,11 @@ export const updateHeight = (height) => ({
 	height,
 });
 
-export const signInUser = (userId, height, fullName) => ({
+export const signInUser = (userId, height, name) => ({
 	type: SIGN_IN_USER,
 	userId,
 	height,
-	fullName,
+	name,
 });
 
 export const updateSessionId = (sessionId) => ({
@@ -40,6 +41,11 @@ export const updateSessionId = (sessionId) => ({
 	sessionId,
 });
 
+export const updateDeskConnection = (deskConnected) => ({
+	type: UPDATE_DESK_CONNECTION,
+	deskConnected,
+});
+
 export const logOut = () => ({
 	type: LOG_OUT,
-})
+});

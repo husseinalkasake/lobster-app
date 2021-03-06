@@ -6,9 +6,13 @@ import HomeImage from "../../images/home.svg";
 
 class Home extends React.Component {
     render() {
-        const { fullName } = this.props;
+        let { name } = this.props;
+        const space = name.indexOf(" ");
+        if (space > -1) name = name.substr(0, space);
+
         const windowWidth = Dimensions.get('window').width;
         const windowHeight = Dimensions.get('window').height;
+        
         const hourOfDay = new Date().getHours();
         let time = "";
         if (hourOfDay >= 18 || hourOfDay < 4)
@@ -21,7 +25,7 @@ class Home extends React.Component {
         return (
           <View style={styles.view}>
             <View style={styles.innerContainer}>
-              <Text style={styles.title}>Good {time} {fullName.substr(0, fullName.indexOf(" "))}</Text>
+              <Text style={styles.title}>Good {time} {name}</Text>
               <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                 <HomeImage width={windowWidth/2} height={windowHeight/2}/>
               </View>
@@ -84,7 +88,7 @@ const styles = StyleSheet.create({
 });
 
 const mapStateToProps = (state) => ({
-    fullName: state.fullName,
+  name: state.name,
 });
   
   export default connect(mapStateToProps, null)(Home);
