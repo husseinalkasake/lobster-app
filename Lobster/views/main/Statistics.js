@@ -1,30 +1,38 @@
 import React from 'react';
-import {Text, View, StyleSheet} from 'react-native';
+import {Text, View, StyleSheet, ScrollView, Dimensions} from 'react-native';
 import {connect} from 'react-redux';
 import lobsterController from '../../controller/LobsterController';
 import {WebView} from 'react-native-webview';
-import * as data from './temp.json';
 
 class Statistics extends React.Component {
     state = {
       results: {},
+      error: "",
+      isLoading: false,
     }
 
     componentDidMount() {
-      const temp = this.props;
-      debugger;
-      lobsterController.getSessionSummary(7, 29)
+      const {userId, sessionId} = this.props;
+      const sessionExists = !!userId && !!sessionId;
+
+      this.setState({isLoading: true});
+
+      lobsterController.getSessionSummary(sessionExists ? userId : 7, sessionExists ? sessionId : 29)
       .then(result => {
-        debugger;
-        this.setState({results: result.data.results});
+        this.setState({results: result.data.results, error: ""});
       })
-      .catch(error => {
-        debugger;
-      });
+      .catch(() => {
+        this.setState({error: "Unable to fetch last session summary"});
+      })
+      .finally(() => this.setState({isLoading: false}));
     }
 
     render() {
-        const { average, sitting, standing } = this.state.results;
+        const windowWidth = Dimensions.get('window').width;
+        const windowHeight = Dimensions.get('window').height;
+
+        const { results, error, isLoading } = this.state;
+        const { average, sitting, standing } = results;
 
         const getDataPoints = results => {
           const graphData = [];
@@ -47,7 +55,6 @@ class Statistics extends React.Component {
           theme: "light2",
           backgroundColor: null,
           axisY: {
-            title: "Score",
             suffix: "%",
           },
           axisX: {
@@ -57,6 +64,7 @@ class Statistics extends React.Component {
             verticalAlign: "top",
             horizontalAlign: "center",
             dockInsidePlotArea: true,
+            fontSize: 16,
           },
           data: [
             {
@@ -75,20 +83,46 @@ class Statistics extends React.Component {
             },
           ],
         };
+			
+        const score = average && average.score;
+        const recommendations = (average && average.recommendations) ? average.recommendations : [];
 
         return (
-          <View style={styles.view}>
-            <Text style={{fontSize: 24, fontWeight: 'bold', position: 'absolute', left: 24, color: '#2B088E', top: '5%'}}>Statistics</Text>
-            <View style={{position: 'absolute', left: 0, top: '10%', marginHorizontal: 12, marginTop: 12, width: '94%', height: '40%'}}>
-              <WebView
-                originWhitelist={['*']}
-                style={{backgroundColor: 'transparent'}}
-                injectedJavaScript={`const meta = document.createElement('meta'); meta.setAttribute('content', 'width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0'); meta.setAttribute('name', 'viewport'); document.getElementsByTagName('head')[0].appendChild(meta); `}
-                source={{ html: `<div id='chartContainer' style='height: 100%; width: 100%;'>Chart Renders Here</div><script src='https://canvasjs.com/assets/script/canvasjs.min.js'></script><script>window.onload=function(){var chart = new CanvasJS.Chart('chartContainer', ${JSON.stringify(options)}); chart.render();}</script>` }}
-              />
-              <View style={{position: 'absolute', left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0)'}}/>
+          <>
+          {(isLoading || error !== "") ? (
+            <View style={styles.view}>
+              <Text style={{fontWeight: 'bold', color: isLoading ? 'black' : 'red'}}>{isLoading ? 'Fetching Summary...' : error}</Text>
             </View>
-          </View>
+          ) : (
+            <View style={styles.view}>
+              <Text style={{fontSize: 24, fontWeight: 'bold', position: 'absolute', left: 24, color: '#2B088E', top: '5%'}}>Statistics</Text>
+              <Text style={{fontWeight: 'bold', position: 'absolute', top: '10%', left: 24, fontSize: 16}}>Performance over Session</Text>
+              <View style={{position: 'absolute', left: 0, top: '12%', marginHorizontal: 12, marginTop: 12, width: '94%', height: '40%'}}>
+                <WebView
+                  originWhitelist={['*']}
+                  style={{backgroundColor: 'transparent'}}
+                  injectedJavaScript={`const meta = document.createElement('meta'); meta.setAttribute('content', 'width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0'); meta.setAttribute('name', 'viewport'); document.getElementsByTagName('head')[0].appendChild(meta); `}
+                  source={{ html: `<div id='chartContainer' style='height: 100%; width: 100%;'>Chart Renders Here</div><script src='https://canvasjs.com/assets/script/canvasjs.min.js'></script><script>window.onload=function(){var chart = new CanvasJS.Chart('chartContainer', ${JSON.stringify(options)}); chart.render();}</script>` }}
+                />
+                <View style={{position: 'absolute', left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0)'}}/>
+              </View>
+              <View style={{position: 'absolute', top: '52%', left: 0, marginHorizontal: 24}}>
+                <Text style={{fontWeight: 'bold', marginVertical: 24, fontSize: 16}}>Overall Performance: {Math.round(score)}%</Text>
+                <Text style={{fontWeight: 'bold', fontSize: 16}}>Recommendations</Text>
+                <View style={{width: windowWidth - 36, left: 0, marginTop: 12, height: windowHeight - 600}}>
+                  <ScrollView>
+                    {recommendations.map((recommendation) => (
+                      <View style={{marginVertical: 6}}>
+                        <Text style={{fontWeight: 'bold'}}>{recommendation.property.substring(0,1).toUpperCase() + recommendation.property.substring(1)}</Text>
+                        <Text>{recommendation.user_message}</Text>
+                      </View>
+                    ))}
+                  </ScrollView>
+                </View>
+              </View>
+            </View>
+          )}
+          </>
         );
     }
 }
@@ -128,7 +162,6 @@ const styles = StyleSheet.create({
 const mapStateToProps = (state) => ({
     userId: state.userId,
     sessionId: state.sessionId,
-    temp: state,
 });
 
 export default connect(mapStateToProps, null)(Statistics);
