@@ -32,7 +32,6 @@ class Timer extends React.Component {
       }, 1000);
 
       if (this.props.onHalfMinuteMark) this.halfMinuteMark = setInterval(() => this.props.onHalfMinuteMark(), 30000);
-      if (this.props.onFiveMinuteMark) this.fiveMinuteMark = setInterval(() => this.props.onFiveMinuteMark(), 5*60000);
     }
   }
 
@@ -40,7 +39,6 @@ class Timer extends React.Component {
     debugger;
     this.timerTick && clearInterval(this.timerTick);
     this.halfMinuteMark && clearInterval(this.halfMinuteMark);
-    this.fiveMinuteMark && clearInterval(this.fiveMinuteMark);
   }
 
   render() {
@@ -59,7 +57,6 @@ class WorkSession extends React.Component {
       startingWorkSession: false,
       confirmEndSession: false,
       confirmMoveDesk: false,
-      showCurrentProgressSummary: false,
       moveDeskStatus: ActionStatus.INACTIVE,
     }
 
@@ -67,7 +64,7 @@ class WorkSession extends React.Component {
       this.setState({startingWorkSession: true});
       lobsterController.startSession(this.props.userId).then(result => {
           this.setState({startingWorkSession: false});
-          debugger;
+          console.log(`Session ID: ${result.data.session.id}`);
           this.props.updateSessionId(result.data.session.id);
           this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
             this.setState({confirmEndSession: true});
@@ -95,16 +92,6 @@ class WorkSession extends React.Component {
         }
     }
 
-    getSummary = () => {
-      lobsterController.getLastFiveMinSummary(this.props.userId, this.props.sessionId)
-      .then(response => {
-        this.setState({showCurrentProgressSummary: true});
-      })
-      .catch(error => {
-          console.log(error);
-      });
-    }
-
     moveDesk = () => {
       this.setState({moveDeskStatus: ActionStatus.IN_PROGRESS});
       BluetoothManager.writeMessagePromise("1")
@@ -113,7 +100,7 @@ class WorkSession extends React.Component {
     };
 
     render() {
-        const { imgCount, startingWorkSession, showCurrentProgressSummary } = this.state;
+        const { imgCount, startingWorkSession } = this.state;
         const windowWidth = Dimensions.get('window').width;
         const windowHeight = Dimensions.get('window').height;
 
@@ -124,7 +111,7 @@ class WorkSession extends React.Component {
                   <View>
                     <Text style={{marginLeft: 8, fontSize: 16, fontWeight: 'bold', color: '#A30020'}}>In Progress</Text>
                     <View style={{position: 'absolute', right: 4}}>
-                      <Timer style={{textAlign: 'right'}} active={!startingWorkSession} onHalfMinuteMark={this.takePicture} onFiveMinuteMark={this.getSummary} />
+                      <Timer style={{textAlign: 'right'}} active={!startingWorkSession} onHalfMinuteMark={this.takePicture} />
                       <Text style={{textAlign: 'right', color: 'gray', fontSize: 12, fontWeight: 'bold'}}>{imgCount > 0 ? `${imgCount} Image${imgCount > 1 ? 's' : ''} Captured` : 'No Images Yet'}</Text>
                     </View>
                   </View>
@@ -155,9 +142,15 @@ class WorkSession extends React.Component {
                   <TouchableOpacity style={styles.button} onPress={() => this.setState({confirmEndSession: true})}>
                     <Text style={styles.buttonText}>End Work Session</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={{position: 'absolute', width: '100%', bottom: 20}} onPress={() => this.setState({confirmMoveDesk: true})}>
-                    <Text style={{fontWeight: 'bold', alignSelf: 'center'}}>Move Desk?</Text>
-                  </TouchableOpacity>
+                  {this.props.deskConnected ? (
+                    <TouchableOpacity style={{position: 'absolute', width: '100%', bottom: 20}} onPress={() => this.setState({confirmMoveDesk: true})}>
+                      <Text style={{fontWeight: 'bold', alignSelf: 'center'}}>Move Desk?</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={{position: 'absolute', width: '100%', bottom: 20}}>
+                      <Text style={{fontWeight: 'bold', alignSelf: 'center', fontSize: 12}}>No Desk in Session 😞</Text>
+                    </View>
+                  )}
                 </View>
                 {this.state.startingWorkSession && (
                   <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
@@ -212,27 +205,6 @@ class WorkSession extends React.Component {
                       </View>
                   </View>
                 )}
-                {/* {showCurrentProgressSummary && (
-                  <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
-                      <View style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        backgroundColor: 'white',
-                        height: '20%',
-                        width: '100%',
-                        paddingHorizontal: 24,
-                        paddingTop: 24,
-                      }}>
-                        <Text style={{color: 'black', fontWeight: 'bold'}}>Performance So Far</Text>
-                        <Text style={{color: 'black', fontWeight: 'bold'}}>Temp</Text>
-                        <View style={{position: 'relative', flex: 1, flexDirection: 'column', marginTop: 24}}>
-                          <TouchableOpacity onPress={() => this.setState({showCurrentProgressSummary: false})} style={{position: 'absolute', left: 0, right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '100%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                            <Text style={{fontWeight: 'bold'}}>OK</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                  </View>
-                )} */}
           </View>
         );
     }
@@ -295,6 +267,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = (state) => ({
   userId: state.userId,
   sessionId: state.sessionId,
+  deskConnected: state.deskConnected,
 });
 
 const mapDispatchToProps = (dispatch) => ({

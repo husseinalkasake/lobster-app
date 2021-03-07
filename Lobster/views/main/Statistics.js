@@ -16,7 +16,6 @@ class Statistics extends React.Component {
       const sessionExists = !!userId && !!sessionId;
 
       this.setState({isLoading: true});
-
       lobsterController.getSessionSummary(sessionExists ? userId : 7, sessionExists ? sessionId : 29)
       .then(result => {
         this.setState({results: result.data.results, error: ""});
@@ -91,7 +90,7 @@ class Statistics extends React.Component {
           <>
           {(isLoading || error !== "") ? (
             <View style={styles.view}>
-              <Text style={{fontWeight: 'bold', color: isLoading ? 'black' : 'red'}}>{isLoading ? 'Fetching Summary...' : error}</Text>
+              <Text style={{fontWeight: 'bold', color: isLoading ? 'black' : '#A30020'}}>{isLoading ? 'Fetching Summary...' : error}</Text>
             </View>
           ) : (
             <View style={styles.view}>

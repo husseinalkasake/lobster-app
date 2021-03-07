@@ -28,13 +28,17 @@ class DeskConnect extends React.Component {
         this.setState({scanStatus: ActionStatus.SUCCESS});
         this.props.updateDeskConnection(true);
       })
-      .catch(() => this.setState({scanStatus: ActionStatus.FAIL}));
+      .catch(() => {
+        this.setState({scanStatus: ActionStatus.FAIL});
+        this.props.updateDeskConnection(false);
+      });
     });
   }
 
   stopScan() {
     BluetoothManager.stopScan();
     this.setState({scanStatus: ActionStatus.FAIL});
+    this.props.updateDeskConnection(false);
   }
 
   render() {
