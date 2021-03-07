@@ -95,7 +95,7 @@ class Statistics extends React.Component {
           ) : (
             <View style={styles.view}>
               <Text style={{fontSize: 24, fontWeight: 'bold', position: 'absolute', left: 24, color: '#2B088E', top: '5%'}}>Statistics</Text>
-              <Text style={{fontWeight: 'bold', position: 'absolute', top: '10%', left: 24, fontSize: 16}}>Performance over Session</Text>
+              <Text style={{fontWeight: 'bold', position: 'absolute', top: '10%', left: 24, fontSize: 16}}>Performance over Last Session</Text>
               <View style={{position: 'absolute', left: 0, top: '12%', marginHorizontal: 12, marginTop: 12, width: '94%', height: '40%'}}>
                 <WebView
                   originWhitelist={['*']}
