@@ -80,10 +80,12 @@ class WorkSession extends React.Component {
 
     takePicture = async () => {
         if (this.camera) {
-          const data = await this.camera.takePictureAsync({ quality: 0.5, base64: true });
+          const data = await this.camera.takePictureAsync({ quality: 0.5, base64: true, fixOrientation: true });
           debugger;
           lobsterController.sendImage(this.props.userId, this.props.sessionId, data.base64)
-          .then(() => {
+          .then(result => {
+            console.log("Image Taken");
+            debugger;
             this.setState({imgCount: this.state.imgCount + 1});
           })
           .catch(error => {
