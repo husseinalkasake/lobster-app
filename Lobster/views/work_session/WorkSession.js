@@ -6,8 +6,18 @@ import { connect } from 'react-redux';
 import {updateSessionId} from '../../redux/actions';
 import lobsterController from '../../controller/LobsterController';
 import BluetoothManager, {ActionStatus} from '../../bluetooth/BluetoothManager';
-import { Buffer } from 'buffer';
 import { MAIN_TABS_ROUTE } from '../../navigation/routes';
+
+// Load Sound Player
+const Sound = require('react-native-sound');
+Sound.setCategory('Ambient');
+const successSound = new Sound('success_sound.mp3', Sound.MAIN_BUNDLE);
+const failSound = new Sound('fail_sound.mp3', Sound.MAIN_BUNDLE);
+successSound.setVolume(0.1);
+failSound.setVolume(0.1);
+successSound.setPan(1);
+failSound.setPan(1);
+
 
 class Timer extends React.Component {
   state = {
@@ -86,10 +96,11 @@ class WorkSession extends React.Component {
           .then(result => {
             console.log("Image Taken");
             debugger;
-            this.setState({imgCount: this.state.imgCount + 1});
+            this.setState({imgCaptureFailed: false, imgCount: this.state.imgCount + 1});
           })
-          .catch(error => {
-              console.log(error);
+          .catch(() => {
+            this.setState({imgCaptureFailed: true});
+            failSound.play();
           });
         }
     }
@@ -102,7 +113,7 @@ class WorkSession extends React.Component {
     };
 
     render() {
-        const { imgCount, startingWorkSession } = this.state;
+        const { imgCount, startingWorkSession, imgCaptureFailed } = this.state;
         const windowWidth = Dimensions.get('window').width;
         const windowHeight = Dimensions.get('window').height;
 
@@ -110,6 +121,7 @@ class WorkSession extends React.Component {
           <View style={styles.container}>
                 <View style={{justifyContent: 'center'}}>
                   <Text style={{marginLeft: 4, fontSize: 24, fontWeight: 'bold', color: '#2B088E'}}>Work Session</Text>
+                  {(startingWorkSession || imgCaptureFailed) && (<Text style={{position: 'absolute', right: 4, paddingBottom: 14, fontSize: 12, fontWeight: 'bold', color: '#A30020'}}>Please Ensure Full Body is in Frame</Text>)}
                   <View>
                     <Text style={{marginLeft: 8, fontSize: 16, fontWeight: 'bold', color: '#A30020'}}>In Progress</Text>
                     <View style={{position: 'absolute', right: 4}}>
