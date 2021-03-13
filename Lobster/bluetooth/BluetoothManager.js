@@ -26,12 +26,7 @@ const requestLocationPermission = async () => {
           buttonPositive: 'OK',
         },
       );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Location Permission Given');
-        isGranted = true;
-      } else {
-        console.log('Location Permission Denied');
-      }
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) isGranted = true;
     } catch (err) {
       console.warn(err);
     }

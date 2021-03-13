@@ -115,7 +115,6 @@ class Statistics extends React.Component {
               >
                 {this.state.allSessions && this.state.allSessions.map(session => {
                   const date = new Date(session.created_on);
-                  debugger;
                   return(<Picker.Item label={Intl.DateTimeFormat('en-US', { dateStyle: 'short', timeStyle: 'short' }).format(date)} value={session.id} />);
                 })}
               </Picker>

@@ -14,7 +14,6 @@ const rootReducer = (state = defaultState, action) => {
     case SIGN_IN_USER:
       return {...state, userId: action.userId, height: action.height, name: action.name, isSignedIn: true};
     case UPDATE_SESSION_ID:
-      debugger;
       return {...state, sessionId: action.sessionId};
     case UPDATE_DESK_CONNECTION:
       return {...state, deskConnected: action.deskConnected};

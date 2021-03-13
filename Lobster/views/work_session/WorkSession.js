@@ -10,7 +10,7 @@ import { MAIN_TABS_ROUTE } from '../../navigation/routes';
 
 // Load Sound Player
 const Sound = require('react-native-sound');
-Sound.setCategory('Ambient');
+Sound.setCategory('Alarm');
 const successSound = new Sound('success_sound.mp3', Sound.MAIN_BUNDLE);
 const failSound = new Sound('fail_sound.mp3', Sound.MAIN_BUNDLE);
 successSound.setVolume(0.1);
@@ -18,6 +18,9 @@ failSound.setVolume(0.1);
 successSound.setPan(1);
 failSound.setPan(1);
 
+// Desk Position
+const DESK_POSITION_SITTING = "0";
+const DESK_POSITION_STANDING = "1";
 
 class Timer extends React.Component {
   state = {
@@ -46,7 +49,6 @@ class Timer extends React.Component {
   }
 
   componentWillUnmount() {
-    debugger;
     this.timerTick && clearInterval(this.timerTick);
     this.halfMinuteMark && clearInterval(this.halfMinuteMark);
   }
@@ -64,9 +66,12 @@ class Timer extends React.Component {
 class WorkSession extends React.Component {
     state = {
       imgCount: 0,
+      imgFailCount: 0,
       startingWorkSession: false,
       confirmEndSession: false,
       confirmMoveDesk: false,
+      confirmDeskPosition: false,
+      workSessionSetupFailed: false,
       moveDeskStatus: ActionStatus.INACTIVE,
     }
 
@@ -74,14 +79,13 @@ class WorkSession extends React.Component {
       this.setState({startingWorkSession: true});
       lobsterController.startSession(this.props.userId).then(result => {
           this.setState({startingWorkSession: false});
-          console.log(`Session ID: ${result.data.session.id}`);
           this.props.updateSessionId(result.data.session.id);
           this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
             this.setState({confirmEndSession: true});
             return true;
           });
       })
-      .catch((error) => console.log(error));
+      .catch(() => this.setState({workSessionSetupFailed: true}));
     }
 
     componentWillUnmount() {
@@ -91,29 +95,28 @@ class WorkSession extends React.Component {
     takePicture = async () => {
         if (this.camera) {
           const data = await this.camera.takePictureAsync({ quality: 0.5, base64: true, fixOrientation: true });
-          debugger;
           lobsterController.sendImage(this.props.userId, this.props.sessionId, data.base64)
-          .then(result => {
-            console.log("Image Taken");
-            debugger;
-            this.setState({imgCaptureFailed: false, imgCount: this.state.imgCount + 1});
-          })
+          .then(() => this.setState({imgCaptureFailed: false, imgCount: this.state.imgCount + 1}))
           .catch(() => {
-            this.setState({imgCaptureFailed: true});
-            failSound.play();
+            const imgFailCount = this.state.imgFailCount + 1;
+            if(imgFailCount === 3) {
+              this.setState({imgCaptureFailed: true, imgFailCount: 0});
+              failSound.play();
+            } else
+              this.setState({imgFailCount});
           });
         }
     }
 
-    moveDesk = () => {
+    moveDesk = (deskPosition) => {
       this.setState({moveDeskStatus: ActionStatus.IN_PROGRESS});
-      BluetoothManager.writeMessagePromise("1")
-      .then(() => this.setState({moveDeskStatus: ActionStatus.SUCCESS}))
+      BluetoothManager.writeMessagePromise(deskPosition)
+      .then(() => this.setState({moveDeskStatus: ActionStatus.SUCCESS, confirmDeskPosition: false}))
       .catch(() => this.setState({moveDeskStatus: ActionStatus.FAIL}));
-    };
+    }
 
     render() {
-        const { imgCount, startingWorkSession, imgCaptureFailed } = this.state;
+        const { imgCount, startingWorkSession, imgCaptureFailed, moveDeskStatus, confirmDeskPosition, workSessionSetupFailed } = this.state;
         const windowWidth = Dimensions.get('window').width;
         const windowHeight = Dimensions.get('window').height;
 
@@ -169,21 +172,18 @@ class WorkSession extends React.Component {
                 {this.state.startingWorkSession && (
                   <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
                       <View style={styles.settingUpPopUpContainer}>
-                        <Text style={{color: 'black', fontWeight: 'bold'}}>Setting up Work Session...</Text>
+                        <Text style={{color: 'black', fontWeight: 'bold'}}>{workSessionSetupFailed ? "Failed to Setup Work Session. Please try again later." : "Setting up Work Session..."}</Text>
+                          {workSessionSetupFailed && (
+                            <TouchableOpacity onPress={() => this.props.navigation.navigate(MAIN_TABS_ROUTE)} style={{position: 'absolute', left: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '100%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                              <Text style={{fontWeight: 'bold'}}>OK</Text>
+                            </TouchableOpacity>
+                          )}
                       </View>
                   </View>
                 )}
                 {this.state.confirmEndSession && (
                   <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
-                      <View style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        backgroundColor: 'white',
-                        height: '15%',
-                        width: '100%',
-                        paddingHorizontal: 24,
-                        paddingTop: 24,
-                      }}>
+                      <View style={styles.smallPopUpContainer}>
                         <Text style={{color: 'black', fontWeight: 'bold'}}>Are you sure you want to end work session?</Text>
                         <View style={{position: 'relative', flex: 1, flexDirection: 'column', marginTop: 24}}>
                           <TouchableOpacity onPress={() => this.setState({confirmEndSession: false})} style={{position: 'absolute', left: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
@@ -198,25 +198,47 @@ class WorkSession extends React.Component {
                 )}
                 {this.state.confirmMoveDesk && (
                   <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
-                      <View style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        backgroundColor: 'white',
-                        height: '15%',
-                        width: '100%',
-                        paddingHorizontal: 24,
-                        paddingTop: 24,
-                      }}>
+                      <View style={styles.smallPopUpContainer}>
                         <Text style={{color: 'black', fontWeight: 'bold'}}>Are you sure you want to move desk?</Text>
                         <View style={{position: 'relative', flex: 1, flexDirection: 'column', marginTop: 24}}>
                           <TouchableOpacity onPress={() => this.setState({confirmMoveDesk: false})} style={{position: 'absolute', left: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>No</Text>
                           </TouchableOpacity>
-                          <TouchableOpacity onPress={() => this.moveDesk()} style={{position: 'absolute', right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                          <TouchableOpacity onPress={() => this.setState({confirmMoveDesk: false, confirmDeskPosition: true})} style={{position: 'absolute', right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                             <Text style={{fontWeight: 'bold'}}>Yes</Text>
                           </TouchableOpacity>
                         </View>
                       </View>
+                  </View>
+                )}
+                {confirmDeskPosition && (
+                  <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
+                    {moveDeskStatus === ActionStatus.IN_PROGRESS ? (
+                      <View style={styles.settingUpPopUpContainer}>
+                        <Text style={{color: 'black', fontWeight: 'bold'}}>Moving Desk...</Text>
+                      </View>
+                    ) : moveDeskStatus === ActionStatus.FAIL ? (
+                      <View style={styles.smallPopUpContainer}>
+                        <Text style={{color: '#A30020', fontWeight: 'bold'}}>Failed to Move Desk. Please try again later.</Text>
+                        <View style={{position: 'relative', flex: 1, flexDirection: 'column', marginTop: 24}}>
+                          <TouchableOpacity onPress={() => this.setState({confirmDeskPosition: false})} style={{position: 'absolute', left: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '100%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{fontWeight: 'bold'}}>OK</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ) : (
+                      <View style={styles.smallPopUpContainer}>
+                        <Text style={{color: 'black', fontWeight: 'bold'}}>Which position to move desk to?</Text>
+                        <View style={{position: 'relative', flex: 1, flexDirection: 'column', marginTop: 24}}>
+                          <TouchableOpacity onPress={() => this.moveDesk(DESK_POSITION_SITTING)} style={{position: 'absolute', left: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{fontWeight: 'bold'}}>Sitting</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => this.moveDesk(DESK_POSITION_STANDING)} style={{position: 'absolute', right: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '48%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                            <Text style={{fontWeight: 'bold'}}>Standing</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
                   </View>
                 )}
           </View>
@@ -275,6 +297,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  smallPopUpContainer: {
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: 'white',
+    height: '15%',
+    width: '100%',
+    paddingHorizontal: 24,
+    paddingTop: 24,
   },
 });
 
