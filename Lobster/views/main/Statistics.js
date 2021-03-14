@@ -113,10 +113,7 @@ class Statistics extends React.Component {
                 style={{ width: 190, position: 'absolute', right: 0, top: '8.3%' }}
                 itemStyle={{maxWidth: 160}}
               >
-                {this.state.allSessions && this.state.allSessions.map(session => {
-                  const date = new Date(session.created_on);
-                  return(<Picker.Item label={Intl.DateTimeFormat('en-US', { dateStyle: 'short', timeStyle: 'short' }).format(date)} value={session.id} />);
-                })}
+                {this.state.allSessions && this.state.allSessions.map(session => <Picker.Item label={new Date(session.created_on).toLocaleString('en-US', {year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })} key={session.id} value={session.id} />)}
               </Picker>
               {(isLoading || error !== "" || !results || Object.keys(results).length === 0) ? (
                 <View style={styles.view}>

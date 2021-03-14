@@ -11,8 +11,8 @@ import { MAIN_TABS_ROUTE } from '../../navigation/routes';
 // Load Sound Player
 const Sound = require('react-native-sound');
 Sound.setCategory('Alarm');
-const successSound = new Sound('success_sound.mp3', Sound.MAIN_BUNDLE);
-const failSound = new Sound('fail_sound.mp3', Sound.MAIN_BUNDLE);
+const successSound = new Sound('success_sound_3.mp3', Sound.MAIN_BUNDLE);
+const failSound = new Sound('fail_sound_2.mp3', Sound.MAIN_BUNDLE);
 successSound.setVolume(0.1);
 failSound.setVolume(0.1);
 successSound.setPan(1);
@@ -80,6 +80,7 @@ class WorkSession extends React.Component {
       lobsterController.startSession(this.props.userId).then(result => {
           this.setState({startingWorkSession: false});
           this.props.updateSessionId(result.data.session.id);
+          successSound.play();
           this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
             this.setState({confirmEndSession: true});
             return true;
@@ -90,6 +91,7 @@ class WorkSession extends React.Component {
 
     componentWillUnmount() {
       this.backHandler && this.backHandler.remove();
+      BluetoothManager.disconnect();
     }
 
     takePicture = async () => {
@@ -124,7 +126,7 @@ class WorkSession extends React.Component {
           <View style={styles.container}>
                 <View style={{justifyContent: 'center'}}>
                   <Text style={{marginLeft: 4, fontSize: 24, fontWeight: 'bold', color: '#2B088E'}}>Work Session</Text>
-                  {(startingWorkSession || imgCaptureFailed) && (<Text style={{position: 'absolute', right: 4, paddingBottom: 14, fontSize: 12, fontWeight: 'bold', color: '#A30020'}}>Please Ensure Full Body is in Frame</Text>)}
+                  {imgCaptureFailed && (<Text style={{position: 'absolute', right: 4, paddingBottom: 14, fontSize: 12, fontWeight: 'bold', color: '#A30020'}}>Please Ensure Full Body is in Frame</Text>)}
                   <View>
                     <Text style={{marginLeft: 8, fontSize: 16, fontWeight: 'bold', color: '#A30020'}}>In Progress</Text>
                     <View style={{position: 'absolute', right: 4}}>
@@ -169,16 +171,22 @@ class WorkSession extends React.Component {
                     </View>
                   )}
                 </View>
-                {this.state.startingWorkSession && (
+                {startingWorkSession && (
                   <View style={{...styles.popUpBackground, width: windowWidth, height: windowHeight}}>
-                      <View style={styles.settingUpPopUpContainer}>
-                        <Text style={{color: 'black', fontWeight: 'bold'}}>{workSessionSetupFailed ? "Failed to Setup Work Session. Please try again later." : "Setting up Work Session..."}</Text>
-                          {workSessionSetupFailed && (
+                      {!workSessionSetupFailed ? (
+                        <View style={styles.settingUpPopUpContainer}>
+                          <Text style={{color: 'black', fontWeight: 'bold', position: 'absolute', left: 24,}}>Setting up Work Session...</Text>
+                        </View>
+                      ) : (
+                        <View style={styles.smallPopUpContainer}>
+                          <Text style={{color: '#A30020', fontWeight: 'bold'}}>Failed to Setup Work Session. Please try again later.</Text>
+                          <View style={{position: 'relative', flex: 1, flexDirection: 'column', marginTop: 24}}>
                             <TouchableOpacity onPress={() => this.props.navigation.navigate(MAIN_TABS_ROUTE)} style={{position: 'absolute', left: 0, borderColor: 'black', borderWidth: 1, borderRadius: 5, width: '100%', height: 50, flex: 1, justifyContent: 'center', alignItems: 'center'}}>
                               <Text style={{fontWeight: 'bold'}}>OK</Text>
                             </TouchableOpacity>
-                          )}
-                      </View>
+                          </View>
+                        </View>
+                      )}
                   </View>
                 )}
                 {this.state.confirmEndSession && (

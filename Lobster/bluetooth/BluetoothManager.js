@@ -65,6 +65,10 @@ export default class BluetoothManager {
       this._bleManager.stopDeviceScan();
     }
 
+    static disconnect() {
+      this._bleManager.cancelDeviceConnection(DEVICE_ID);
+    }
+
     static scanForDevicePromise() {
       return new Promise(async(resolve, reject) => {
         const locationAccessGranted = await requestLocationPermission();
